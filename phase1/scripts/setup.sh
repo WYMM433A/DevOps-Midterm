@@ -1,41 +1,44 @@
 #!/bin/bash
-
 set -e
 
-echo "================================================"
-echo "  Server Setup Script — Ubuntu 22.04"
-echo "================================================"
+echo "================================================="
+echo "   Server Setup Script — Ubuntu 22.04"
+echo "================================================="
 
-
-# ── Update system packages ───
-echo ""
+# 1. Update system packages
 sudo apt-get update -y && sudo apt-get upgrade -y
 
-# ── Install NPM 
-npm install
-
-# ── Install Node.js 20 LTS ──
-echo ""
+# 2. Install Node.js 20 LTS
+echo "--> Installing Node.js 20..."
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
+hash -r
 
-# ── Install Git ──
-sudo apt-get install -y git
-
-# ── Install MongoDB 6.0 ──
-curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | \
-  sudo gpg -o /usr/share/keyrings/mongodb-server-6.0.gpg --dearmor
-
-echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-6.0.gpg ] \
-https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | \
-  sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
-
-sudo apt-get update -y
-sudo apt-get install -y mongodb-org
-
-# Start and enable MongoDB to run on boot
+# 3. Install MongoDB & Tools
+sudo apt-get install -y git mongodb-org
 sudo systemctl start mongod
 sudo systemctl enable mongod
 
-# ── Install PM2 process manager ──
+# 4. Install PM2 globally
 sudo npm install -g pm2
+
+# 5. Project Setup
+echo "--> Setting up application..."
+cd ~/DevOps-Midterm/app
+
+# Install dependencies (fixes the 'dotenv' error)
+npm install
+
+# 6. FIX FOR EADDRINUSE: Kill anything on Port 3000 before starting
+echo "--> Clearing Port 3000..."
+sudo fuser -k 3000/tcp || true
+
+# 7. Start the app with PM2
+echo "--> Starting app with PM2..."
+pm2 delete midterm-app || true  # Delete old instance if it exists
+pm2 start main.js --name "midterm-app"
+
+echo "================================================="
+echo "   Success! App is running on port 3000."
+echo "   Use 'pm2 logs' to see the output."
+echo "================================================="
