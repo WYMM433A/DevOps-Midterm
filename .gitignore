@@ -1,8 +1,8 @@
 # Dependencies — never commit these
-node_modules/
+app/node_modules
 
 # Environment variables — never commit real .env
-.env
+app/.env
 
 # Uploaded files — live on the server, not in git
 app/public/uploads/*
