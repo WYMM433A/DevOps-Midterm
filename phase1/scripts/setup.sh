@@ -11,6 +11,9 @@ echo "================================================"
 echo ""
 sudo apt-get update -y && sudo apt-get upgrade -y
 
+# ── Install NPM 
+npm install
+
 # ── Install Node.js 20 LTS ──
 echo ""
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
