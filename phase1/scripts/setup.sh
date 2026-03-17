@@ -2,7 +2,7 @@
 set -e
 
 echo "================================================="
-echo "   EC2 Setup Script — Ubuntu 22.04"
+echo "   Phase 2 Setup Script (with Auto-HTTPS)"
 echo "================================================="
 
 # 1. Update system packages
@@ -14,36 +14,28 @@ curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt-get install -y nodejs
 hash -r
 
-# 3. Add MongoDB Repository (Crucial for EC2/Ubuntu)
+# 3. Add MongoDB 7.0 Repository
 echo "--> Adding MongoDB 7.0 Repository..."
 sudo apt-get install -y gnupg curl
-
-# Import the GPG key
 curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | \
    sudo gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg --yes
-
-# Add the source list for Ubuntu 22.04 (jammy)
 echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | \
    sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-
-# Update package list again
 sudo apt-get update -y
 
-# 4. Install MongoDB, Git & Tools
+# 4. Install MongoDB & Git
 echo "--> Installing MongoDB and Git..."
 sudo apt-get install -y git mongodb-org
-
-# Start and enable MongoDB
 sudo systemctl daemon-reload
 sudo systemctl start mongod
 sudo systemctl enable mongod
 
-# 5. Install PM2 globally
+# 5. Install PM2
+echo "--> Installing PM2..."
 sudo npm install -g pm2
 
 # 6. Project Setup
 echo "--> Setting up application..."
-# Note: Ensure you have cloned your repo to ~/DevOps-Midterm before running this
 if [ -d "$HOME/DevOps-Midterm/app" ]; then
     cd "$HOME/DevOps-Midterm/app"
     npm install
@@ -52,7 +44,7 @@ else
     exit 1
 fi
 
-# 7. FIX FOR EADDRINUSE
+# 7. Clear Port 3000
 echo "--> Clearing Port 3000..."
 sudo fuser -k 3000/tcp || true
 
@@ -60,17 +52,48 @@ sudo fuser -k 3000/tcp || true
 echo "--> Starting app with PM2..."
 pm2 delete midterm-app || true 
 pm2 start main.js --name "midterm-app"
+pm2 save
+pm2 startup | tail -n 1 | bash
 
-# 9. Final Health Check
-echo "--> Verifying deployment..."
-sleep 5 # Give the app a second to boot
-if curl -s --head  --request GET http://localhost:3000 | grep "200 OK" > /dev/null; then 
-   echo "✅ SUCCESS: App is responding on Port 3000!"
-else
-   echo "⚠️ WARNING: App started but is not responding on Port 3000. Check 'pm2 logs'."
-fi
+# 9. Install Nginx and Certbot
+echo "--> Installing Nginx and SSL tools..."
+sudo apt-get install -y nginx certbot python3-certbot-nginx
+
+# 10. Create Nginx Configuration
+echo "--> Configuring Nginx for vestarex20.shop..."
+cat <<EOF | sudo tee /etc/nginx/sites-available/vestarex-app
+server {
+    listen 80;
+    server_name vestarex20.shop www.vestarex20.shop;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+    }
+}
+EOF
+
+# 11. Enable config and restart Nginx
+sudo ln -sf /etc/nginx/sites-available/vestarex-app /etc/nginx/sites-enabled/
+sudo rm -f /etc/nginx/sites-enabled/default
+sudo nginx -t
+sudo systemctl restart nginx
+
+# 12. Automate SSL Certificate Generation
+# The --redirect flag forces all traffic from HTTP to HTTPS
+echo "--> Securing domain with Let's Encrypt (HTTPS)..."
+sudo certbot --nginx \
+    -d vestarex20.shop -d www.vestarex20.shop \
+    --non-interactive \
+    --agree-tos \
+    -m admin@vestarex20.shop \
+    --redirect
 
 echo "================================================="
-echo "   REMINDER: Update your EC2 Security Group!"
-echo "   Allow Inbound TCP traffic on Port 3000."
+echo "   Phase 2 Setup Complete!"
+echo "   Your site is now secured with HTTPS."
 echo "================================================="
