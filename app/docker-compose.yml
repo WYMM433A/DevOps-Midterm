@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # 1. The Web Application Service
+  web:
+    image: akh2100/midterm-app:v1 # Pulls the exact image you just pushed
+    container_name: midterm-web
+    restart: always # Requirement 6.6: Restarts automatically on crash or server reboot
+    ports:
+      - "3000:3000" # Exposes internal port 3000 to the host so Nginx can see it
+    environment:
+      # CRITICAL: Overrides your app's DB connection string to point to the container network
+      - MONGO_URI=mongodb://database:27017/midterm_db 
+      - PORT=3000
+    depends_on:
+      - database
+    volumes:
+      # Requirement 6.4: Maps a local 'uploads' folder so Multer files survive restarts
+      - ./uploads:/usr/src/app/uploads 
+
+  # 2. The Database Service (Requirement 6.3)
+  database:
+    image: mongo:7.0 # Using official MongoDB 7.0 to match your Phase 2 setup
+    container_name: midterm-mongo
+    restart: always
+    ports:
+      - "27017:27017" # Optional: Exposes DB port to host for debugging
+    volumes:
+      # Requirement 6.4: Persistent storage for the database
+      - mongo_data:/data/db
+
+# Defines the named volume for MongoDB
+volumes:
+  mongo_data:
