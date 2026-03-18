@@ -44,27 +44,40 @@ else
     exit 1
 fi
 
-# 7. Clear Port 3000
+# 7. Create .env if it doesn't exist
+echo "--> Checking .env file..."
+if [ ! -f "$HOME/DevOps-Midterm/app/.env" ]; then
+    echo "    ⚠️  No .env found — creating default..."
+    cat <<EOL > "$HOME/DevOps-Midterm/app/.env"
+PORT=3000
+MONGO_URI=mongodb://localhost:27017/products_db
+EOL
+    echo "    ✓ .env created"
+else
+    echo "    ✓ .env already exists"
+fi
+
+# 8. Clear Port 3000
 echo "--> Clearing Port 3000..."
 sudo fuser -k 3000/tcp || true
 
-# 8. Start the app with PM2
+# 9. Start the app with PM2
 echo "--> Starting app with PM2..."
 pm2 delete midterm-app || true 
 pm2 start main.js --name "midterm-app"
 pm2 save
 pm2 startup | tail -n 1 | bash
 
-# 9. Install Nginx and Certbot
+# 10. Install Nginx and Certbot
 echo "--> Installing Nginx and SSL tools..."
 sudo apt-get install -y nginx certbot python3-certbot-nginx
 
-# 10. Create Nginx Configuration
-echo "--> Configuring Nginx for vestarex20.shop..."
-cat <<EOF | sudo tee /etc/nginx/sites-available/vestarex-app
+# 11. Create Nginx Configuration
+echo "--> Configuring Nginx for wymm.online..."
+cat <<EOF | sudo tee /etc/nginx/sites-available/wymm-app
 server {
     listen 80;
-    server_name vestarex20.shop www.vestarex20.shop;
+    server_name wymm.online www.wymm.online;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -77,20 +90,20 @@ server {
 }
 EOF
 
-# 11. Enable config and restart Nginx
-sudo ln -sf /etc/nginx/sites-available/vestarex-app /etc/nginx/sites-enabled/
+# 12. Enable config and restart Nginx
+sudo ln -sf /etc/nginx/sites-available/wymm-app /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl restart nginx
 
-# 12. Automate SSL Certificate Generation
+# 13. Automate SSL Certificate Generation
 # The --redirect flag forces all traffic from HTTP to HTTPS
 echo "--> Securing domain with Let's Encrypt (HTTPS)..."
 sudo certbot --nginx \
-    -d vestarex20.shop -d www.vestarex20.shop \
+    -d wymm.online -d www.wymm.online \
     --non-interactive \
     --agree-tos \
-    -m admin@vestarex20.shop \
+    -m admin@wymm.online \
     --redirect
 
 echo "================================================="
