@@ -6,6 +6,19 @@ echo "   Pure Docker Deployment Script (with Auto-HTTPS)"
 echo "   Domain: wymm.online"
 echo "================================================="
 
+# Cleaning up everything from Phase 2 to ensure a clean slate for Docker deployment. 
+echo "--> Cleaning up previous installation..."
+sudo systemctl stop mongod 2>/dev/null || true
+sudo systemctl disable mongod 2>/dev/null || true
+sudo docker stop $(sudo docker ps -aq) 2>/dev/null || true
+sudo docker rm $(sudo docker ps -aq) 2>/dev/null || true
+sudo rm -f /etc/nginx/sites-enabled/wymm-app
+sudo rm -f /etc/nginx/sites-available/wymm-app
+sudo rm -rf /etc/letsencrypt/live/wymm.online
+sudo rm -rf /etc/letsencrypt/archive/wymm.online
+sudo rm -rf /etc/letsencrypt/renewal/wymm.online.conf
+echo "    ✓ Cleanup complete"
+
 # 1. Update system packages
 echo "--> Updating system packages..."
 sudo apt-get update -y && sudo apt-get upgrade -y
