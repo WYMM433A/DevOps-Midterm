@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   web:
     image: akh2100/midterm-app:v1
@@ -33,28 +31,3 @@ volumes:
 networks:
   app-network:
     driver: bridge
-
----
-
-## Summary of How Everything Connects
-
-DockerSetup.sh runs
-      ↓
-Installs Docker + Nginx + Certbot
-      ↓
-Stops native MongoDB (fixes port conflict)
-      ↓
-docker compose pull → downloads images from Docker Hub
-      ↓
-docker compose up -d → starts two containers:
-      ├── midterm-web (Node.js app on port 3000)
-      └── midterm-mongo (MongoDB, internal only)
-            ↓
-Both containers on same app-network
-midterm-web connects to midterm-mongo via service name "database"
-      ↓
-Nginx configured → forwards port 80/443 → port 3000
-      ↓
-Certbot → gets SSL certificate → HTTPS enabled
-      ↓
-https://wymm.online → Nginx → Docker web container → Docker MongoDB
