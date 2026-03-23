@@ -23,9 +23,9 @@ echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gp
    sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 sudo apt-get update -y
 
-# 4. Install MongoDB & Git
-echo "--> Installing MongoDB and Git..."
-sudo apt-get install -y git mongodb-org
+# 4. Install MongoDB
+echo "--> Installing MongoDB..."
+ssudo apt-get install -y mongodb-org
 sudo systemctl daemon-reload
 sudo systemctl start mongod
 sudo systemctl enable mongod
@@ -110,3 +110,6 @@ echo "================================================="
 echo "   Phase 2 Setup Complete!"
 echo "   Your site is now secured with HTTPS."
 echo "================================================="
+
+
+
