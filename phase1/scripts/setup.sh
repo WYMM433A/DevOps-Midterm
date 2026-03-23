@@ -25,7 +25,7 @@ sudo apt-get update -y
 
 # 4. Install MongoDB
 echo "--> Installing MongoDB..."
-ssudo apt-get install -y mongodb-org
+sudo apt-get install -y mongodb-org
 sudo systemctl daemon-reload
 sudo systemctl start mongod
 sudo systemctl enable mongod
