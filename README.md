@@ -1,6 +1,6 @@
 # DevOps-Midterm — Cloud Migration & Containerization
 
-**Course:** 502094 - Software Deployment, Operations and Maintenance
+**Course:** 502094 - Software Deployment, Operations and Maintenance  
 **Institution:** Ton Duc Thang University (TDTU)
 
 ---
@@ -9,19 +9,25 @@
 
 This project deploys a Node.js/Express + MongoDB product management web application onto an AWS EC2 Ubuntu 22.04 server using two distinct approaches:
 
-- **Phase 2:** Traditional host-based deployment using Nginx as a reverse proxy and PM2 as a process manager
-- **Phase 3:** Modern containerized deployment using Docker and Docker Compose
+- **Phase 2:** Traditional host-based deployment using Nginx as a reverse proxy and PM2 as a process manager, accessible at **https://wymm.online**
+- **Phase 3:** Modern containerized deployment using Docker and Docker Compose, accessible at **https://vestarex20.shop**
 
-The project demonstrates practical DevOps competencies including repository management, Linux automation, cloud provisioning, firewall configuration, reverse proxy setup, HTTPS provisioning, containerization, image registry usage, and deployment comparison.
-
-A comparative analysis between both deployment models is documented in the technical report.
+The project demonstrates practical DevOps competencies including repository management, Linux automation, cloud provisioning, firewall configuration, reverse proxy setup, HTTPS provisioning, containerization, image registry usage, and deployment comparison. A comparative analysis between both deployment models is documented in the technical report.
 
 ---
 
-## Live Application
+## Live Applications
 
-- **URL:** https://wymm.online
-- **Docker Hub:** https://hub.docker.com/r/wymm433a/midterm-app
+| Phase | Type | URL |
+|---|---|---|
+| Phase 2 | Traditional (PM2 + MongoDB) | https://wymm.online |
+| Phase 3 | Containerized (Docker + Compose) | https://vestarex20.shop |
+
+---
+
+## Docker Hub
+
+- **Image:** https://hub.docker.com/r/akh2100/midterm-app
 
 ---
 
@@ -46,35 +52,33 @@ A comparative analysis between both deployment models is documented in the techn
 
 ```
 DevOps-Midterm/
-├── app/                          # Instructor sample Node.js project
-│   ├── controllers/              # Request/response logic
-│   ├── models/                   # Mongoose schema (Product)
-│   ├── routes/                   # API and UI routes
-│   ├── services/                 # Data abstraction layer (MongoDB / in-memory)
-│   ├── validators/               # Input validation
-│   ├── views/                    # EJS templates
-│   ├── public/
-│   │   ├── css/
-│   │   ├── js/
-│   │   └── uploads/              # Product images (gitignored)
-│   ├── main.js                   # Application entry point
+├── app/                              # Instructor sample Node.js project
+│   ├── controllers/                  # Request/response logic
+│   ├── models/                       # Mongoose schema (Product)
+│   ├── routes/                       # API and UI routes
+│   ├── services/                     # Data abstraction layer
+│   ├── validators/                   # Input validation
+│   ├── views/                        # EJS templates
+│   ├── public/                       # Static files (CSS, JS, images)
+│   ├── uploads/                      # Product image uploads (gitignored)
+│   ├── Dockerfile                    # Production Docker image definition
+│   ├── main.js                       # Application entry point
 │   ├── package.json
-│   └── .env.example              # Environment variable template
+│   └── .env.example                  # Environment variable template
 ├── phase1/
 │   ├── scripts/
-│   │   └── setup.sh              # Server automation script
-│   ├── screenshots/              # Branch protection, PRs, contributors
-│   └── docs/                     # Architecture diagrams
+│   │   └── setup.sh                  # Phase 2 server automation script
+│   ├── screenshots/                  # Git workflow evidence
+│   └── docs/                         # Architecture diagrams
 ├── phase2/
 │   ├── nginx/
-│   │   └── app.conf              # Nginx reverse proxy configuration
-│   ├── screenshots/              # DNS, HTTPS, PM2 evidence
-│   └── .env.example              # Environment variable template
+│   │   └── app.conf                  # Nginx reverse proxy configuration
+│   └── screenshots/                  # Deployment evidence
 ├── phase3/
-│   ├── Dockerfile                # Production Docker image definition
-│   ├── docker-compose.yml        # Multi-container orchestration
-│   ├── screenshots/              # Docker build, push, ps evidence
-│   └── .env.example              # Environment variable template
+│   ├── scripts/
+│   │   └── docker-setup.sh           # Phase 3 Docker deployment script
+│   ├── docker-compose.yml            # Multi-container orchestration
+│   └── screenshots/                  # Docker deployment evidence
 ├── .gitignore
 └── README.md
 ```
@@ -96,7 +100,7 @@ DevOps-Midterm/
 
 ### Prerequisites
 - Node.js 16+ and npm
-- MongoDB running locally (or use MongoDB Atlas)
+- MongoDB running locally or MongoDB Atlas account
 
 ### Steps
 
@@ -120,7 +124,7 @@ npm start
 # http://localhost:3000
 ```
 
-### Development Mode (with auto-reload)
+### Development Mode
 ```bash
 npm run dev
 ```
@@ -129,12 +133,12 @@ npm run dev
 
 ## Environment Variables
 
-| Variable | Description | Default |
+| Variable | Description | Example |
 |---|---|---|
 | `PORT` | Application listening port | `3000` |
 | `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017/products_db` |
 
-Create a `.env` file in the `app/` directory:
+Create a `.env` file inside the `app/` directory:
 ```bash
 PORT=3000
 MONGO_URI=mongodb://localhost:27017/products_db
@@ -155,73 +159,101 @@ MONGO_URI=mongodb://localhost:27017/products_db
 | PATCH | `/products/:id` | Partially update product |
 | DELETE | `/products/:id` | Delete product and image |
 
-Example — create a product with image upload:
-```bash
-curl -X POST \
-  -F "name=My Device" \
-  -F "price=199" \
-  -F "color=black" \
-  -F "description=Note" \
-  -F "imageFile=@/path/to/photo.jpg" \
-  http://localhost:3000/products
-```
-
 ---
 
-## Automation Script
+## Phase 2 — Traditional Deployment
 
-`phase1/scripts/setup.sh` prepares a fresh Ubuntu 22.04 server by automatically:
+**Domain:** https://wymm.online  
+**Script:** `phase1/scripts/setup.sh`
 
-1. Updating system packages
-2. Installing Node.js 20 LTS
-3. Installing MongoDB 7.0 and starting the service
-4. Installing Git and PM2
-5. Running `npm install` for the application
-6. Creating a default `.env` file
-7. Starting the application with PM2
-8. Configuring PM2 to restart on server reboot
-9. Installing and configuring Nginx as a reverse proxy
-10. Installing a Let's Encrypt SSL certificate via Certbot
+### What the Script Does
+The automation script prepares a fresh Ubuntu 22.04 server in a single command:
 
-Run on your Ubuntu server:
+1. Updates system packages
+2. Installs Node.js 20 LTS
+3. Adds and installs MongoDB 7.0
+4. Installs PM2 process manager
+5. Installs application dependencies
+6. Creates `.env` file automatically
+7. Starts application via PM2 with reboot persistence
+8. Installs and configures Nginx reverse proxy
+9. Provisions HTTPS certificate via Let's Encrypt
+
+### How to Deploy
+
 ```bash
-# Clone the repo first
+# Step 1 — SSH into EC2 server
+ssh -i ~/your-key.pem ubuntu@YOUR_ELASTIC_IP
+
+# Step 2 — Install Git (bootstrap prerequisite)
+sudo apt-get update -y && sudo apt-get install -y git
+
+# Step 3 — Clone repository
 git clone https://github.com/WYMM433A/DevOps-Midterm.git
 
-# Then run the script
+# Step 4 — Run automation script
 bash DevOps-Midterm/phase1/scripts/setup.sh
 ```
 
-> The script assumes the repo is cloned at `~/DevOps-Midterm` before execution.
+### Architecture
+```
+Internet → Nginx (443/80) → PM2 Node.js App (3000) → MongoDB (27017)
+```
 
 ---
 
-## Deployment
+## Phase 3 — Docker Deployment
 
-### Phase 2 — Traditional Deployment
-- AWS EC2 Ubuntu 22.04 (t2.micro)
-- MongoDB running natively on the server
-- Application managed by PM2
-- Nginx reverse proxy on ports 80/443
-- HTTPS via Let's Encrypt (Certbot)
-- Domain: https://wymm.online
+**Domain:** https://vestarex20.shop  
+**Script:** `phase3/scripts/docker-setup.sh`  
+**Image:** `akh2100/midterm-app:v1`
 
-Full deployment is automated via `phase1/scripts/setup.sh`.
+### What the Script Does
+The Docker deployment script automates the entire containerized setup:
 
-### Phase 3 — Docker Deployment
-- Same EC2 server
-- Application and MongoDB containerized via Docker Compose
-- Nginx remains on host, upstream updated to container port
-- Persistent volumes for uploads and database data
-- Images pulled from Docker Hub
+1. Cleans up previous installations
+2. Installs Docker and Docker Compose
+3. Installs Nginx and Certbot
+4. Pulls latest repository changes
+5. Pulls Docker images from Docker Hub
+6. Starts containers via Docker Compose
+7. Configures Nginx reverse proxy
+8. Provisions HTTPS certificate via Let's Encrypt
+
+### How to Deploy
 
 ```bash
-# Deploy Phase 3
-cd phase3
-docker compose pull
-docker compose up -d
-docker ps
+# Step 1 — SSH into EC2 server
+ssh -i ~/your-key.pem ubuntu@YOUR_ELASTIC_IP
+
+# Step 2 — Install Git (bootstrap prerequisite)
+sudo apt-get update -y && sudo apt-get install -y git
+
+# Step 3 — Clone repository
+git clone https://github.com/WYMM433A/DevOps-Midterm.git
+
+# Step 4 — Run Docker deployment script
+bash DevOps-Midterm/phase3/scripts/docker-setup.sh
 ```
+
+### Docker Compose Services
+
+| Service | Image | Port | Purpose |
+|---|---|---|---|
+| `web` | `akh2100/midterm-app:v1` | 3000 | Node.js application |
+| `database` | `mongo:7.0` | internal only | MongoDB database |
+
+### Architecture
+```
+Internet → Nginx (443/80) → Docker web container (3000) → Docker MongoDB container
+```
+
+### Persistent Volumes
+
+| Volume | Purpose |
+|---|---|
+| `mongo_data` | MongoDB database storage |
+| `uploads_data` | Product image uploads |
 
 ---
 
@@ -237,9 +269,23 @@ This project follows a professional Git collaboration workflow:
 
 ---
 
+## Deployment Comparison
+
+| Aspect | Phase 2 (Traditional) | Phase 3 (Docker) |
+|---|---|---|
+| App managed by | PM2 | Docker Compose |
+| Database | Native MongoDB on host | MongoDB container |
+| Portability | Host-dependent | Fully portable |
+| Reproducibility | Manual steps required | Single script |
+| Restart policy | PM2 + systemd | restart: always |
+| Isolation | None | Full container isolation |
+| Domain | https://wymm.online | https://vestarex20.shop |
+
+---
+
 ## Team Members
 
-| Name | GitHub | 
+| Name | GitHub |
 |---|---|
 | Wai Yan Moe Myint | [@WYMM433A](https://github.com/WYMM433A) |
 | Aung Kaung Htet | [@Ko-Aung2100](https://github.com/Ko-Aung2100) |
@@ -250,7 +296,7 @@ This project follows a professional Git collaboration workflow:
 ## Important Notes
 
 - The application includes a built-in fallback to in-memory storage if MongoDB is unavailable
-- Uploaded images are stored in `app/public/uploads/` — this directory is gitignored
-- For production use, consider migrating image storage to AWS S3 or Cloudinary
-- The `.env` file is never committed to the repository — use `.env.example` as a template
-- Auto-renew on the domain has been disabled as per course instructions
+- Uploaded images are stored in `app/uploads/` — this directory is gitignored
+- The `.env` file is never committed — use `.env.example` as a template
+- Git must be installed manually before cloning as a bootstrap prerequisite
+- Auto-renew on both domains has been disabled as per course instructions
