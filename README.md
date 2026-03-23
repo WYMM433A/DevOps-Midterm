@@ -18,9 +18,9 @@ The project demonstrates practical DevOps competencies including repository mana
 
 ## Live Applications
 
-| Phase | Type | URL |
-|---|---|---|
-| Phase 2 | Traditional (PM2 + MongoDB) | https://wymm.online |
+| Phase   | Type                             | URL                     |
+| ------- | -------------------------------- | ----------------------- |
+| Phase 2 | Traditional (PM2 + MongoDB)      | https://wymm.online     |
 | Phase 3 | Containerized (Docker + Compose) | https://vestarex20.shop |
 
 ---
@@ -33,18 +33,18 @@ The project demonstrates practical DevOps competencies including repository mana
 
 ## Tech Stack
 
-| Component | Technology |
-|---|---|
-| Backend | Node.js 20 + Express |
-| Database | MongoDB 7.0 |
-| View Engine | EJS + Bootstrap |
-| Web Server | Nginx (reverse proxy) |
-| Process Manager | PM2 (Phase 2) |
-| Containerization | Docker + Docker Compose (Phase 3) |
-| Container Registry | Docker Hub |
-| Cloud Provider | AWS EC2 — Ubuntu 22.04 LTS |
-| SSL Certificate | Let's Encrypt (Certbot) |
-| Version Control | GitHub (branch protection + pull requests) |
+| Component          | Technology                                 |
+| ------------------ | ------------------------------------------ |
+| Backend            | Node.js 20 + Express                       |
+| Database           | MongoDB 7.0                                |
+| View Engine        | EJS + Bootstrap                            |
+| Web Server         | Nginx (reverse proxy)                      |
+| Process Manager    | PM2 (Phase 2)                              |
+| Containerization   | Docker + Docker Compose (Phase 3)          |
+| Container Registry | Docker Hub                                 |
+| Cloud Provider     | AWS EC2 — Ubuntu 24.04 LTS                 |
+| SSL Certificate    | Let's Encrypt (Certbot)                    |
+| Version Control    | GitHub (branch protection + pull requests) |
 
 ---
 
@@ -99,6 +99,7 @@ DevOps-Midterm/
 ## Run Locally
 
 ### Prerequisites
+
 - Node.js 16+ and npm
 - MongoDB running locally or MongoDB Atlas account
 
@@ -125,6 +126,7 @@ npm start
 ```
 
 ### Development Mode
+
 ```bash
 npm run dev
 ```
@@ -133,12 +135,13 @@ npm run dev
 
 ## Environment Variables
 
-| Variable | Description | Example |
-|---|---|---|
-| `PORT` | Application listening port | `3000` |
-| `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017/products_db` |
+| Variable    | Description                | Example                                 |
+| ----------- | -------------------------- | --------------------------------------- |
+| `PORT`      | Application listening port | `3000`                                  |
+| `MONGO_URI` | MongoDB connection string  | `mongodb://localhost:27017/products_db` |
 
 Create a `.env` file inside the `app/` directory:
+
 ```bash
 PORT=3000
 MONGO_URI=mongodb://localhost:27017/products_db
@@ -150,14 +153,14 @@ MONGO_URI=mongodb://localhost:27017/products_db
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/products` | Get all products |
-| GET | `/products/:id` | Get single product |
-| POST | `/products` | Create product (supports image upload) |
-| PUT | `/products/:id` | Replace entire product |
-| PATCH | `/products/:id` | Partially update product |
-| DELETE | `/products/:id` | Delete product and image |
+| Method | Endpoint        | Description                            |
+| ------ | --------------- | -------------------------------------- |
+| GET    | `/products`     | Get all products                       |
+| GET    | `/products/:id` | Get single product                     |
+| POST   | `/products`     | Create product (supports image upload) |
+| PUT    | `/products/:id` | Replace entire product                 |
+| PATCH  | `/products/:id` | Partially update product               |
+| DELETE | `/products/:id` | Delete product and image               |
 
 ---
 
@@ -167,6 +170,7 @@ MONGO_URI=mongodb://localhost:27017/products_db
 **Script:** `phase1/scripts/setup.sh`
 
 ### What the Script Does
+
 The automation script prepares a fresh Ubuntu 22.04 server in a single command:
 
 1. Updates system packages
@@ -196,6 +200,7 @@ bash DevOps-Midterm/phase1/scripts/setup.sh
 ```
 
 ### Architecture
+
 ```
 Internet → Nginx (443/80) → PM2 Node.js App (3000) → MongoDB (27017)
 ```
@@ -209,6 +214,7 @@ Internet → Nginx (443/80) → PM2 Node.js App (3000) → MongoDB (27017)
 **Image:** `akh2100/midterm-app:v1`
 
 ### What the Script Does
+
 The Docker deployment script automates the entire containerized setup:
 
 1. Cleans up previous installations
@@ -238,22 +244,23 @@ bash DevOps-Midterm/phase3/scripts/docker-setup.sh
 
 ### Docker Compose Services
 
-| Service | Image | Port | Purpose |
-|---|---|---|---|
-| `web` | `akh2100/midterm-app:v1` | 3000 | Node.js application |
-| `database` | `mongo:7.0` | internal only | MongoDB database |
+| Service    | Image                    | Port          | Purpose             |
+| ---------- | ------------------------ | ------------- | ------------------- |
+| `web`      | `akh2100/midterm-app:v1` | 3000          | Node.js application |
+| `database` | `mongo:7.0`              | internal only | MongoDB database    |
 
 ### Architecture
+
 ```
 Internet → Nginx (443/80) → Docker web container (3000) → Docker MongoDB container
 ```
 
 ### Persistent Volumes
 
-| Volume | Purpose |
-|---|---|
-| `mongo_data` | MongoDB database storage |
-| `uploads_data` | Product image uploads |
+| Volume         | Purpose                  |
+| -------------- | ------------------------ |
+| `mongo_data`   | MongoDB database storage |
+| `uploads_data` | Product image uploads    |
 
 ---
 
@@ -271,25 +278,25 @@ This project follows a professional Git collaboration workflow:
 
 ## Deployment Comparison
 
-| Aspect | Phase 2 (Traditional) | Phase 3 (Docker) |
-|---|---|---|
-| App managed by | PM2 | Docker Compose |
-| Database | Native MongoDB on host | MongoDB container |
-| Portability | Host-dependent | Fully portable |
-| Reproducibility | Manual steps required | Single script |
-| Restart policy | PM2 + systemd | restart: always |
-| Isolation | None | Full container isolation |
-| Domain | https://wymm.online | https://vestarex20.shop |
+| Aspect          | Phase 2 (Traditional)  | Phase 3 (Docker)         |
+| --------------- | ---------------------- | ------------------------ |
+| App managed by  | PM2                    | Docker Compose           |
+| Database        | Native MongoDB on host | MongoDB container        |
+| Portability     | Host-dependent         | Fully portable           |
+| Reproducibility | Manual steps required  | Single script            |
+| Restart policy  | PM2 + systemd          | restart: always          |
+| Isolation       | None                   | Full container isolation |
+| Domain          | https://wymm.online    | https://vestarex20.shop  |
 
 ---
 
 ## Team Members
 
-| Name | GitHub |
-|---|---|
-| Wai Yan Moe Myint | [@WYMM433A](https://github.com/WYMM433A) |
-| Aung Kaung Htet | [@Ko-Aung2100](https://github.com/Ko-Aung2100) |
-| Saw Harry | [@MannDHHarry](https://github.com/MannDHHarry) |
+| Name              | GitHub                                         |
+| ----------------- | ---------------------------------------------- |
+| Wai Yan Moe Myint | [@WYMM433A](https://github.com/WYMM433A)       |
+| Aung Kaung Htet   | [@Ko-Aung2100](https://github.com/Ko-Aung2100) |
+| Saw Harry         | [@MannDHHarry](https://github.com/MannDHHarry) |
 
 ---
 
