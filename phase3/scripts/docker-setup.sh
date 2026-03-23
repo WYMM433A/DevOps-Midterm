@@ -3,7 +3,7 @@ set -e
 
 echo "================================================="
 echo "   Pure Docker Deployment Script (with Auto-HTTPS)"
-echo "   Domain: wymm.online"
+echo "   Domain: vestarex20.shop"
 echo "================================================="
 
 
@@ -58,11 +58,11 @@ sudo docker compose pull
 sudo docker compose up -d
 
 # 8. Create Nginx Configuration
-echo "--> Configuring Nginx for wymm.online..."
-cat <<EOF | sudo tee /etc/nginx/sites-available/wymm-app
+echo "--> Configuring Nginx for vestarex20.shop..."
+cat <<EOF | sudo tee /etc/nginx/sites-available/vesta-app
 server {
     listen 80;
-    server_name wymm.online www.wymm.online;
+    server_name vestarex20.shop www.vestarex20.shop;
 
     location / {
         proxy_pass http://localhost:3000;
@@ -76,7 +76,7 @@ server {
 EOF
 
 # 9. Enable Nginx config and restart
-sudo ln -sf /etc/nginx/sites-available/wymm-app /etc/nginx/sites-enabled/
+sudo ln -sf /etc/nginx/sites-available/vesta-app /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl restart nginx
@@ -84,10 +84,10 @@ sudo systemctl restart nginx
 # 10. Automate SSL Certificate Generation
 echo "--> Securing domain with Let's Encrypt (HTTPS)..."
 sudo certbot --nginx \
-    -d wymm.online -d www.wymm.online \
+    -d vestarex20.shop -d www.vestarex20.shop \
     --non-interactive \
     --agree-tos \
-    -m admin@wymm.online \
+    -m admin@vestarex20.shop \
     --redirect
 
 echo "================================================="
